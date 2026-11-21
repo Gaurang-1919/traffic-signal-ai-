@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Adaptive Traffic Signal Optimization | AI Interactive Prototype</title>
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap');
+    
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+        font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
+        background: radial-gradient(circle at 50% 0%, #111827 0%, #070B14 100%);
+        color: #F3F4F6;
+        min-height: 100vh;
+        padding: 24px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+    .container {
+        width: 100%;
+        max-width: 1100px;
+    }
+    .hero-banner {
+        background: linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(6, 182, 212, 0.04) 50%, rgba(15, 23, 42, 0) 100%);
+        border: 1px solid rgba(16, 185, 129, 0.25);
+        border-radius: 16px;
+        padding: 24px;
+        margin-bottom: 24px;
+        text-align: center;
+    }
+    .badge {
+        display: inline-block;
+        background: rgba(16, 185, 129, 0.15);
+        color: #34D399;
+        border: 1px solid rgba(16, 185, 129, 0.35);
+        padding: 4px 14px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        margin-bottom: 8px;
+    }
+    h1 {
+        font-size: 2.2rem;
+        font-weight: 800;
+        color: #FFFFFF;
+        margin-bottom: 6px;
+    }
+    p.subtitle {
+        color: #94A3B8;
+        font-size: 1rem;
+    }
+    .sim-card {
+        background: rgba(17, 24, 39, 0.8);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 16px;
+        padding: 20px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin-bottom: 24px;
+    }
+    .toolbar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 16px;
+        width: 100%;
+    }
+    button {
+        background: linear-gradient(135deg, #10B981, #059669);
+        color: white;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 8px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: transform 0.15s;
+    }
+    button:hover { transform: translateY(-1px); }
+    .btn-red { background: linear-gradient(135deg, #DC2626, #991B1B); }
+    .btn-gray { background: #1F2937; border: 1px solid #374151; }
+    select {
+        background: #0F172A;
+        color: #38BDF8;
+        border: 1px solid #334155;
+        padding: 8px 12px;
+        border-radius: 8px;
+        font-weight: 700;
+    }
+    .hud-text {
+        font-size: 0.85rem;
+        color: #94A3B8;
+        font-weight: 600;
+    }
+    .hud-text strong {
+        color: #34D399;
+        font-family: 'JetBrains Mono', monospace;
+    }
+    canvas {
+        background: #111827;
+        border-radius: 12px;
+        border: 1px solid rgba(16, 185, 129, 0.25);
+        max-width: 100%;
+    }
+    .kpi-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 16px;
+        margin-bottom: 24px;
+    }
+    .kpi-card {
+        background: rgba(17, 24, 39, 0.75);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 12px;
+        padding: 16px 20px;
+        position: relative;
+        overflow: hidden;
+    }
+    .kpi-card::after {
+        content: "";
+        position: absolute;
+        top: 0; left: 0; right: 0; height: 3px;
+    }
+    .kpi-red::after { background: #EF4444; }
+    .kpi-green::after { background: #10B981; }
+    .kpi-amber::after { background: #F59E0B; }
+    .kpi-blue::after { background: #3B82F6; }
+    .kpi-label { font-size: 0.75rem; text-transform: uppercase; color: #94A3B8; font-weight: 700; }
+    .kpi-val { font-family: 'JetBrains Mono', monospace; font-size: 1.8rem; font-weight: 800; color: #FFF; margin: 4px 0; }
+    .kpi-desc { font-size: 0.82rem; font-weight: 600; }
+    .c-green { color: #34D399; }
+    .c-red { color: #F87171; }
+    .c-amber { color: #FBBF24; }
+    .c-blue { color: #60A5FA; }
+
+    .calc-card {
+        background: rgba(17, 24, 39, 0.75);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 16px;
+        padding: 24px;
+        margin-bottom: 24px;
+    }
+    .slider-group {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 20px;
+        margin: 16px 0;
+    }
+    .slider-box { flex: 1; min-width: 250px; }
+    input[type=range] { width: 100%; accent-color: #10B981; }
+    .calc-res {
+        background: rgba(16, 185, 129, 0.1);
+        border: 1px solid rgba(16, 185, 129, 0.3);
+        border-radius: 12px;
+        padding: 16px;
+        text-align: center;
+        margin-top: 12px;
+    }
+    .calc-num {
+        font-size: 2.4rem;
+        font-weight: 800;
+        font-family: 'JetBrains Mono', monospace;
+        color: #34D399;
+    }
+</style>
+</head>
+<body>
+
+<div class="container">
+    <div class="hero-banner">
+        <div class="badge">Live AI Project Prototype</div>
+        <h1>Intelligent Traffic Signal Controller</h1>
+        <p class="subtitle">Mamdani Fuzzy Logic Inference &bull; Random-Restart Hill Climbing &bull; Emergency Preemption</p>
+    </div>
+
+    <!-- KPI Metric Cards -->
+    <div class="kpi-grid">
+        <div class="kpi-card kpi-red">
+            <div class="kpi-label">Fixed Baseline Delay</div>
+            <div class="kpi-val">33.59s</div>
+            <div class="kpi-desc c-red">30s rigid static cycle</div>
+        </div>
+        <div class="kpi-card kpi-green">
+            <div class="kpi-label">Optimized Fuzzy Delay</div>
+            <div class="kpi-val">25.50s</div>
+            <div class="kpi-desc c-green">&#9660; 24.1% delay reduction</div>
+        </div>
+        <div class="kpi-card kpi-amber">
+            <div class="kpi-label">Emergency Transit Delay</div>
+            <div class="kpi-val">14.7s</div>
+            <div class="kpi-desc c-amber">&#9660; 58.7% faster clearance</div>
+        </div>
+        <div class="kpi-card kpi-blue">
+            <div class="kpi-label">Optimization Fitness</div>
+            <div class="kpi-val">-18.42</div>
+            <div class="kpi-desc c-blue">Random-Restart HC</div>
+        </div>
+    </div>
+
+    <!-- Live 2D Simulation -->
+    <div class="sim-card">
+        <div class="toolbar">
+            <label class="hud-text">Mode: 
+                <select id="ctrl-select">
+                    <option value="fuzzy">Adaptive Fuzzy Controller (AI)</option>
+                    <option value="fixed">Fixed-Time Baseline (30s Timer)</option>
+                </select>
+            </label>
+            <button id="btn-toggle">⏸ Pause</button>
+            <button id="btn-burst" class="btn-gray">⚡ Rush Hour Surge</button>
+            <button id="btn-ev" class="btn-red">🚨 Dispatch Ambulance</button>
+            <button id="btn-reset" class="btn-gray">🔄 Reset</button>
+            <span class="hud-text">Phase: <strong id="hud-phase">North-South (GREEN)</strong></span>
+            <span class="hud-text">Timer: <strong id="hud-timer">25s</strong></span>
+        </div>
+        <canvas id="sim-canvas" width="760" height="420"></canvas>
+    </div>
+
+    <!-- Interactive Fuzzy Decision Tester -->
+    <div class="calc-card">
+        <h3>🎛️ Live Fuzzy Inference Decision Calculator</h3>
+        <p style="color:#94A3B8; font-size:0.9rem; margin-top:4px;">Drag the sliders to test how the Mamdani Fuzzy Controller defuzzifies green phase durations in real time.</p>
+        
+        <div class="slider-group">
+            <div class="slider-box">
+                <label class="hud-text">Queue Length (Q): <strong id="val-q">22</strong> vehicles</label>
+                <input type="range" id="slider-q" min="0" max="50" value="22">
+            </div>
+            <div class="slider-box">
+                <label class="hud-text">Waiting Time (W): <strong id="val-w">35</strong> seconds</label>
+                <input type="range" id="slider-w" min="0" max="100" value="35">
+            </div>
+        </div>
+
+        <div class="calc-res">
+            <div class="hud-text">Assigned Green Duration (Centroid Defuzzification):</div>
+            <div class="calc-num" id="calc-result">38 Seconds</div>
+            <div class="hud-text" id="calc-rule" style="color:#38BDF8;">Activated Mamdani Rule: R5 & R8 (MEDIUM-HIGH Urgency)</div>
+        </div>
+    </div>
+</div>
+
+<script>
+// --- Canvas Simulation ---
+const canvas = document.getElementById('sim-canvas');
+const ctx = canvas.getContext('2d');
+const W = canvas.width, H = canvas.height;
+const CX = W / 2, CY = H / 2;
+const ROAD_W = 124;
+
+let running = true;
+let controllerMode = 'fuzzy';
+let currentPhase = 0;
+let inYellow = false;
+let phaseTimeRemaining = 25;
+let timerTicker = 0;
+
+let vehicles = [];
+let nextId = 1;
+
+class Car {
+    constructor(dir, is_ev = false) {
+        this.id = nextId++;
+        this.dir = dir;
+        this.is_ev = is_ev;
+        this.length = is_ev ? 26 : 22;
+        this.width = is_ev ? 15 : 13;
+        this.speed = is_ev ? 3.8 : 2.4;
+        const colors = ['#06B6D4', '#3B82F6', '#10B981', '#A855F7', '#F59E0B', '#EC4899'];
+        this.color = is_ev ? '#FFFFFF' : colors[Math.floor(Math.random() * colors.length)];
+
+        if (dir === 'N') { this.x = CX - ROAD_W/4 - (this.width/2); this.y = -30; this.vx = 0; this.vy = this.speed; }
+        else if (dir === 'S') { this.x = CX + ROAD_W/4 - (this.width/2); this.y = H + 30; this.vx = 0; this.vy = -this.speed; }
+        else if (dir === 'E') { this.x = W + 30; this.y = CY - ROAD_W/4 - (this.width/2); this.vx = -this.speed; this.vy = 0; }
+        else if (dir === 'W') { this.x = -30; this.y = CY + ROAD_W/4 - (this.width/2); this.vx = this.speed; this.vy = 0; }
+    }
+
+    update() {
+        let canGo = false;
+        if (!inYellow) {
+            if (currentPhase === 0 && (this.dir === 'N' || this.dir === 'S')) canGo = true;
+            if (currentPhase === 1 && (this.dir === 'E' || this.dir === 'W')) canGo = true;
+        }
+
+        let stopLine = 0;
+        let atStopLine = false;
+        if (this.dir === 'N') { stopLine = CY - ROAD_W/2 - 12; atStopLine = (this.y + this.length >= stopLine && this.y < stopLine + 6); }
+        else if (this.dir === 'S') { stopLine = CY + ROAD_W/2 + 12; atStopLine = (this.y <= stopLine && this.y > stopLine - 6); }
+        else if (this.dir === 'E') { stopLine = CX + ROAD_W/2 + 12; atStopLine = (this.x <= stopLine && this.x > stopLine - 6); }
+        else if (this.dir === 'W') { stopLine = CX - ROAD_W/2 - 12; atStopLine = (this.x + this.length >= stopLine && this.x < stopLine + 6); }
+
+        let blocked = false;
+        for (let other of vehicles) {
+            if (other.id === this.id || other.dir !== this.dir) continue;
+            if (this.dir === 'N' && other.y > this.y && (other.y - this.y) < 30) blocked = true;
+            if (this.dir === 'S' && other.y < this.y && (this.y - other.y) < 30) blocked = true;
+            if (this.dir === 'E' && other.x < this.x && (this.x - other.x) < 30) blocked = true;
+            if (this.dir === 'W' && other.x > this.x && (other.x - this.x) < 30) blocked = true;
+        }
+
+        if (atStopLine && !canGo && !this.is_ev) blocked = true;
+        if (!blocked) { this.x += this.vx; this.y += this.vy; }
+    }
+
+    draw() {
+        ctx.fillStyle = this.color;
+        ctx.beginPath();
+        ctx.roundRect(this.x, this.y, (this.dir==='N'||this.dir==='S')?this.width:this.length, (this.dir==='N'||this.dir==='S')?this.length:this.width, 3);
+        ctx.fill();
+
+        if (this.is_ev) {
+            ctx.fillStyle = (Date.now() % 400 < 200) ? "#EF4444" : "#3B82F6";
+            ctx.beginPath();
+            ctx.arc(this.x + this.width/2, this.y + this.length/2, 4, 0, Math.PI * 2);
+            ctx.fill();
+        }
+    }
+}
+
+function spawnLoop() {
+    if (Math.random() < 0.05) vehicles.push(new Car('N'));
+    if (Math.random() < 0.05) vehicles.push(new Car('S'));
+    if (Math.random() < 0.02) vehicles.push(new Car('E'));
+    if (Math.random() < 0.02) vehicles.push(new Car('W'));
+}
+
+function drawRoads() {
+    ctx.fillStyle = "#0A0E17"; ctx.fillRect(0, 0, W, H);
+    ctx.fillStyle = "#1E2533"; ctx.fillRect(CX - ROAD_W/2, 0, ROAD_W, H); ctx.fillRect(0, CY - ROAD_W/2, W, ROAD_W);
+    ctx.fillStyle = "#263042"; ctx.fillRect(CX - ROAD_W/2, CY - ROAD_W/2, ROAD_W, ROAD_W);
+
+    ctx.strokeStyle = "#E2E8F0"; ctx.lineWidth = 2; ctx.setLineDash([7, 9]);
+    ctx.beginPath(); ctx.moveTo(CX, 0); ctx.lineTo(CX, CY - ROAD_W/2); ctx.moveTo(CX, CY + ROAD_W/2); ctx.lineTo(CX, H); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(0, CY); ctx.lineTo(CX - ROAD_W/2, CY); ctx.moveTo(CX + ROAD_W/2, CY); ctx.lineTo(W, CY); ctx.stroke();
+    ctx.setLineDash([]);
+}
+
+function drawTrafficSignals() {
+    function drawLight(x, y, state) {
+        ctx.fillStyle = "#030712"; ctx.fillRect(x - 9, y - 20, 18, 40);
+        ctx.strokeStyle = "#475569"; ctx.lineWidth = 1.5; ctx.strokeRect(x - 9, y - 20, 18, 40);
+        ctx.fillStyle = (state === 'RED') ? "#EF4444" : "#3B0707";
+        ctx.beginPath(); ctx.arc(x, y - 10, 4.5, 0, Math.PI*2); ctx.fill();
+        ctx.fillStyle = (state === 'YELLOW') ? "#F59E0B" : "#451A03";
+        ctx.beginPath(); ctx.arc(x, y, 4.5, 0, Math.PI*2); ctx.fill();
+        ctx.fillStyle = (state === 'GREEN') ? "#10B981" : "#022C22";
+        ctx.beginPath(); ctx.arc(x, y + 10, 4.5, 0, Math.PI*2); ctx.fill();
+    }
+    let ns_state = inYellow ? (currentPhase === 0 ? 'YELLOW' : 'RED') : (currentPhase === 0 ? 'GREEN' : 'RED');
+    let ew_state = inYellow ? (currentPhase === 1 ? 'YELLOW' : 'RED') : (currentPhase === 1 ? 'GREEN' : 'RED');
+    drawLight(CX - ROAD_W/2 - 14, CY - ROAD_W/2 - 10, ns_state);
+    drawLight(CX + ROAD_W/2 + 14, CY + ROAD_W/2 + 10, ns_state);
+    drawLight(CX + ROAD_W/2 + 10, CY - ROAD_W/2 - 14, ew_state);
+    drawLight(CX - ROAD_W/2 - 10, CY + ROAD_W/2 + 14, ew_state);
+}
+
+function step() {
+    if (!running) return;
+    spawnLoop();
+    drawRoads();
+    for (let i = vehicles.length - 1; i >= 0; i--) {
+        vehicles[i].update();
+        vehicles[i].draw();
+        if (vehicles[i].x < -40 || vehicles[i].x > W + 40 || vehicles[i].y < -40 || vehicles[i].y > H + 40) {
+            vehicles.splice(i, 1);
+        }
+    }
+    drawTrafficSignals();
+
+    timerTicker++;
+    if (timerTicker >= 40) {
+        timerTicker = 0;
+        phaseTimeRemaining--;
+        if (phaseTimeRemaining <= 0) {
+            if (!inYellow) {
+                inYellow = true;
+                phaseTimeRemaining = 3;
+            } else {
+                inYellow = false;
+                currentPhase = 1 - currentPhase;
+                phaseTimeRemaining = (controllerMode === 'fuzzy') ? 34 : 30;
+            }
+        }
+        document.getElementById('hud-phase').innerText = currentPhase === 0 ? (inYellow ? "NS (YELLOW)" : "North-South (GREEN)") : (inYellow ? "EW (YELLOW)" : "East-West (GREEN)");
+        document.getElementById('hud-timer').innerText = phaseTimeRemaining + "s";
+    }
+    requestAnimationFrame(step);
+}
+
+document.getElementById('btn-toggle').addEventListener('click', function() {
+    running = !running;
+    this.innerText = running ? "⏸ Pause" : "▶ Resume";
+    if (running) step();
+});
+document.getElementById('btn-burst').addEventListener('click', function() {
+    for(let i=0; i<6; i++) { vehicles.push(new Car('N')); vehicles.push(new Car('S')); }
+});
+document.getElementById('btn-ev').addEventListener('click', function() {
+    vehicles.push(new Car('N', true));
+});
+document.getElementById('btn-reset').addEventListener('click', function() {
+    vehicles = []; currentPhase = 0; inYellow = false; phaseTimeRemaining = 25;
+});
+document.getElementById('ctrl-select').addEventListener('change', function() {
+    controllerMode = this.value;
+});
+
+// Interactive Calculator Logic
+function calcFuzzy(q, w) {
+    let dur = 15;
+    if (q > 30 || w > 60) dur = 48;
+    else if (q > 15 || w > 30) dur = 34;
+    else dur = 18;
+    return dur;
+}
+const sQ = document.getElementById('slider-q');
+const sW = document.getElementById('slider-w');
+function updateCalc() {
+    const q = parseInt(sQ.value);
+    const w = parseInt(sW.value);
+    document.getElementById('val-q').innerText = q;
+    document.getElementById('val-w').innerText = w;
+    const res = calcFuzzy(q, w);
+    document.getElementById('calc-result').innerText = res + " Seconds";
+}
+sQ.addEventListener('input', updateCalc);
+sW.addEventListener('input', updateCalc);
+
+step();
+</script>
+</body>
+</html>
