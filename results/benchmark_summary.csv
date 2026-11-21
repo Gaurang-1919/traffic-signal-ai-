@@ -1,0 +1,10 @@
+Scenario,Controller,Avg Wait (s),Max Wait (s),Avg Queue,Throughput (veh),Delay Reduction (%)
+Balanced Moderate,Fixed-Time Baseline,17.46,52.0,10.97,362,0.0%
+Balanced Moderate,Default Fuzzy,17.42,47.0,10.95,364,0.2%
+Balanced Moderate,Optimized Fuzzy (HC),17.15,49.0,10.69,364,1.8%
+Asymmetric Rush Hour,Fixed-Time Baseline,33.59,86.0,21.22,351,0.0%
+Asymmetric Rush Hour,Default Fuzzy,26.42,83.0,18.18,394,21.3%
+Asymmetric Rush Hour,Optimized Fuzzy (HC),25.5,63.0,17.04,383,24.1%
+High Congestion,Fixed-Time Baseline,39.36,134.0,37.26,496,0.0%
+High Congestion,Default Fuzzy,40.09,107.0,38.62,491,-1.9%
+High Congestion,Optimized Fuzzy (HC),40.09,107.0,38.62,491,-1.9%

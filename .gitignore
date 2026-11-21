@@ -1,0 +1,11 @@
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.env
+.venv
+env/
+venv/
+*.tmp
+temp_raw*.mp4
+report_print.html
